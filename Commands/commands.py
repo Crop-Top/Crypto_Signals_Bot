@@ -6,13 +6,9 @@ from services.bybit_service import get_data
 from dotenv import load_dotenv
 load_dotenv()
 
-# BOT_TOKEN = "YOUR_BOT_TOKEN"
-
-
 # =========================
 # COMMANDS
 # =========================
-
 async def trend(update, context):
 
     df = get_data()
@@ -21,21 +17,12 @@ async def trend(update, context):
 
     await update.message.reply_text(trend_signal)
 
-
-# async def status(update, context):
-#     await update.message.reply_text("EMA bot running")
-
-
 # =========================
 # MAIN
 # =========================
-
 app = Application.builder().token(os.getenv("BOT_TOKEN")).build()
 
 # bind commands
 app.add_handler(CommandHandler("trend", trend))
-#app.add_handler(CommandHandler("status", status))
-
-#print("Telegram command bot running...")
 
 app.run_polling()
