@@ -33,13 +33,14 @@ class EMA:
         current_ema50 = df["ema50"].iloc[-2]
 
         price = df["close"].iloc[-1]
+        price_closed = df["close"].iloc[-2]
 
         print(f'9EMA Value: {current_ema9} {datetime.now().strftime("%H:%M:%S")}')
         print(f'21EMA Value: {current_ema21} {datetime.now().strftime("%H:%M:%S")}')
         print(f'50EMA Value: {current_ema50} {datetime.now().strftime("%H:%M:%S")}')
 
         # BUY
-        if previous_ema9 < previous_ema21 and current_ema9 > current_ema21 and price > current_ema50:
+        if previous_ema9 < previous_ema21 and current_ema9 > current_ema21 and price_closed > current_ema50:
 
             if cls.last_signal != "BUY":
 
@@ -53,7 +54,7 @@ class EMA:
                         Price: {price}"""
 
         # SELL
-        elif previous_ema9 > previous_ema21 and current_ema9 < current_ema21 and price < current_ema50:
+        elif previous_ema9 > previous_ema21 and current_ema9 < current_ema21 and price_closed < current_ema50:
 
             if cls.last_signal != "SELL":
 
