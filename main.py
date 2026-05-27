@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 import os
 from datetime import datetime
 from Indicator.EMA import EMA
+from services.bybit_service import get_data
 
 load_dotenv()
 # =========================
@@ -40,39 +41,39 @@ def send_telegram(message):
 # GET CANDLE DATA
 # =========================
 
-def get_data():
-    response = session.get_kline(
-        category="linear",
-        symbol="BTCUSDT",
-        interval="5",
-        limit=1000
-    )
+# def get_data():
+#     response = session.get_kline(
+#         category="linear",
+#         symbol="BTCUSDT",
+#         interval="5",
+#         limit=1000
+#     )
 
-    data = response["result"]["list"]
+#     data = response["result"]["list"]
 
-    df = pd.DataFrame(data)
+#     df = pd.DataFrame(data)
 
-    df.columns = [
-        "timestamp",
-        "open",
-        "high",
-        "low",
-        "close",
-        "volume",
-        "turnover"
-    ]
+#     df.columns = [
+#         "timestamp",
+#         "open",
+#         "high",
+#         "low",
+#         "close",
+#         "volume",
+#         "turnover"
+#     ]
 
-    df = df.astype({
-        "open": float,
-        "high": float,
-        "low": float,
-        "close": float,
-        "volume": float
-    })
+#     df = df.astype({
+#         "open": float,
+#         "high": float,
+#         "low": float,
+#         "close": float,
+#         "volume": float
+#     })
 
-    df = df[::-1]
+#     df = df[::-1]
 
-    return df
+#     return df
 
 # =========================
 # SIGNAL DETECTION
