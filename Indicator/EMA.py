@@ -38,13 +38,7 @@ class EMA:
 
                 cls.last_signal = "BUY"
 
-                return f"""
-🚀 BTCUSDT 5M BUY SIGNAL
-
-EMA 9 crossed ABOVE EMA 21
-
-Price: {price}
-"""
+                return f""" Market Swop To Bullish"""
 
         # SELL
         elif previous_ema9 > previous_ema21 and current_ema9 < current_ema21:
@@ -53,12 +47,46 @@ Price: {price}
 
                 cls.last_signal = "SELL"
 
-                return f"""
-🔻 BTCUSDT 5M SELL SIGNAL
-
-EMA 9 crossed BELOW EMA 21
-
-Price: {price}
-"""
+                return f"""Market Swop To Bearish"""
 
         return None
+    
+class MarketTrend:
+    last_signal = None
+
+    @classmethod
+    def check(cls, df):
+
+        df["ema9"] = EMAIndicator(
+            close=df["close"],
+            window=9
+        ).ema_indicator()
+
+        df["ema21"] = EMAIndicator(
+            close=df["close"],
+            window=21
+        ).ema_indicator()
+
+        # Get Current EMA position
+        current_ema9 = df["ema9"].iloc[-2]
+        current_ema21 = df["ema21"].iloc[-2]
+
+        price = df["close"].iloc[-1]
+
+        # Market Direction
+        if current_ema9 > current_ema21:
+            return f"""
+                    📈 MARKET TREND
+
+                    Trend: Bullish
+                    Price: {price}
+                    """
+
+        # Market Direction
+        elif current_ema9 < current_ema21:
+            return f"""
+                    📉 MARKET TREND
+
+                    Trend: Bearish
+                    Price: {price}
+                    """
