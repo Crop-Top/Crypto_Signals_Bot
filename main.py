@@ -45,7 +45,7 @@ df = get_data()
 signal = EMA.check(df)
 
 if signal:
-    send_telegram(signal)
+    # send_telegram(signal)
     print(signal)
 
 def wait_for_next_5min():
@@ -81,9 +81,9 @@ while True:
 
         signal = EMA.check(df)
 
-        if signal:
-            send_telegram(signal)
-            print(signal)
+        # if signal:
+            # send_telegram(signal)
+            # print(signal)
 
     except Exception as e:
         print("Error:", e)
