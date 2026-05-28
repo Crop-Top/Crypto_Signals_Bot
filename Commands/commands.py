@@ -4,19 +4,13 @@ import os
 from Indicator.EMA_TREND import EMA_TREND
 from services.bybit_service import get_data
 from dotenv import load_dotenv
-from telegram.ext import Application, CommandHandler
-import os
-
-from services.bybit_service import get_data
 from Indicator.RSI_MOMENTUM import RSI_Trend_Continue_signal
-from Indicator.EMA_TREND import EMA_TREND
 
 load_dotenv()
 
 # =========================
 # COMMANDS
 # =========================
-
 # =========================
 # /trend
 # =========================
@@ -29,29 +23,18 @@ async def trend(update, context):
     trend = EMA_TREND.check(df)
 
     if trend == "BULLISH":
-
-        trend_signal = f"""
-📈 MARKET TREND
-
-Trend: Bullish
-Price: ${price}
-"""
+        emoji = "📈"
 
     elif trend == "BEARISH":
-
-        trend_signal = f"""
-📉 MARKET TREND
-
-Trend: Bearish
-Price: ${price}
-"""
+        emoji = "📉"
 
     else:
+        emoji = "➿"
 
-        trend_signal = f"""
-➿ MARKET TREND
+    trend_signal = f"""
+{emoji} MARKET TREND
 
-Trend: Neutral
+Trend: {trend}
 Price: ${price}
 """
 
@@ -93,13 +76,28 @@ Price: {rsi_value}
 
     await update.message.reply_text(message)
 
+
+# DELETE
+def print_zone_debug(df, trend):
+    from Indicator.RSI_MOMENTUM import RSI_Trend_Continue_signal
+
+    RSI_Trend_Continue_signal.check(df, trend)
+
+    print("━━━━━━━━━━━━━━━━━━━━")
+    print("📊 ZONE DEBUG")
+    print(f"Previous Zone: {RSI_Trend_Continue_signal.previous_zone}")
+    print(f"Current Zone:  {RSI_Trend_Continue_signal.current_zone}")
+    print(f"Pending Signal:{RSI_Trend_Continue_signal.pending_signal}")
+    print(f"Pending Target:{RSI_Trend_Continue_signal.pending_target_zone}")
+    print("━━━━━━━━━━━━━━━━━━━━")
+
 # =========================
 # MAIN
 # =========================
-app = Application.builder().token(os.getenv("BOT_TOKEN")).build()
+# app = Application.builder().token(os.getenv("BOT_TOKEN")).build()
 
 # bind commands
-app.add_handler(CommandHandler("trend", trend))
-app.add_handler(CommandHandler("zone", zone))
+# app.add_handler(CommandHandler("trend", trend))
+# app.add_handler(CommandHandler("zone", zone))
 
-app.run_polling()
+# app.run_polling()

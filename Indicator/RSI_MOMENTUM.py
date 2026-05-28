@@ -66,6 +66,7 @@ class RSI_Trend_Continue_signal:
 
         rsi = df["rsi"].iloc[-2]
         new_zone = cls.get_zone(rsi)
+        old_zone = None
 
         # -------------------------
         # INIT IF FIRST RUN
@@ -74,6 +75,9 @@ class RSI_Trend_Continue_signal:
             cls.initialize_zone(df)
             return None
         
+        if cls.previous_zone is None:
+            cls.pending_zone = cls.current_zone
+
         if new_zone != "MID":
             old_zone = cls.current_zone
 
@@ -82,6 +86,8 @@ class RSI_Trend_Continue_signal:
 
             # then update current
             cls.current_zone = new_zone
+
+
 
         # -------------------------
         # CONTINUATION SIGNALS

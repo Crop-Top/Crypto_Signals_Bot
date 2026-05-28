@@ -1,8 +1,4 @@
-from pybit.unified_trading import HTTP
-import pandas as pd
 import requests
-import time
-from ta.trend import EMAIndicator
 from dotenv import load_dotenv
 import os
 from datetime import datetime
@@ -10,21 +6,25 @@ from Indicator.EMA_TREND import EMA_TREND
 from services.bybit_service import get_data
 from Signals.buy_signals import BuySignals
 from Signals.sell_signals import SellSignals
-from services.bybit_service import get_data
+from telegram.ext import Application, CommandHandler
+import asyncio
+from Commands.commands import trend, zone, print_zone_debug
 
 load_dotenv()
 # =========================
+# Command settings
+# =========================
+app = Application.builder().token(os.getenv("BOT_TOKEN")).build()
+
+# bind commands
+app.add_handler(CommandHandler("trend", trend))
+app.add_handler(CommandHandler("zone", zone))
+
+# =========================
 # TELEGRAM SETTINGS
 # =========================
-
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 CHAT_ID = os.getenv("CHAT_ID")
-
-# =========================
-# BYBIT SESSION
-# =========================
-
-session = HTTP(testnet=False)
 
 # =========================
 # TELEGRAM FUNCTION
@@ -40,18 +40,7 @@ def send_telegram(message):
 
     requests.post(url, data=payload)
 
-# =========================
-# SIGNAL DETECTION
-# =========================
-df = get_data()
-
-signal = EMA_TREND.check(df)
-
-if signal:
-    # send_telegram(signal)
-    print(signal)
-
-def wait_for_next_5min():
+async def wait_for_next_5min():
     now = datetime.now()
 
     # seconds passed in current 5m block
@@ -62,7 +51,38 @@ def wait_for_next_5min():
 
     print(f"Waiting {sleep_time:.0f}s until next 5m candle...")
 
-    time.sleep(sleep_time)
+    await asyncio.sleep(sleep_time)
+
+
+async def signal_loop():
+
+    while True:
+
+        await wait_for_next_5min()
+
+        try:
+
+            df = get_data()
+
+            trend = EMA_TREND.check(df)
+
+            print_zone_debug(df, trend)
+
+            buy_signal = BuySignals.check(df)
+            sell_signal = SellSignals.check(df)
+
+            if buy_signal:
+                send_telegram(buy_signal)
+                print(buy_signal)
+
+            if sell_signal:
+                send_telegram(sell_signal)
+                print(sell_signal)
+
+            print("Checked signals...")
+
+        except Exception as e:
+            print("Signal Loop Error:", e)
 
 # =========================
 # MAIN LOOP
@@ -71,27 +91,56 @@ def wait_for_next_5min():
 print(f'Bot started... {datetime.now().strftime("%H:%M:%S")}')
 send_telegram("✅ EMA Signal Bot Online")
 
-while True:
+async def main():
 
-    wait_for_next_5min()
+    print("Bot started...")
 
-    current_time = datetime.now().strftime("%H:%M:%S")
-    print(f"\nChecking signals at {current_time}")
+    # start telegram bot
+    await app.initialize()
+    await app.start()
 
-    try:
+    # start polling
+    await app.updater.start_polling()
 
-        df = get_data()
+    # start signal loop
+    asyncio.create_task(signal_loop())
 
-        buy_signal = BuySignals.check(df)
-        sell_signal = SellSignals.check(df)
+    # keep app alive forever
+    while True:
+        await asyncio.sleep(3600)
 
-        if buy_signal:
-            send_telegram(buy_signal)
-            print(buy_signal)
 
-        if sell_signal:
-            send_telegram(sell_signal)
-        print(sell_signal)
+asyncio.run(main())
 
-    except Exception as e:
-        print("Error:", e)
+# while True:
+
+#     wait_for_next_5min()
+
+#     current_time = datetime.now().strftime("%H:%M:%S")
+#     print(f"\nChecking signals at {current_time}")
+
+#     try:
+
+#         df = get_data()
+
+#         buy_signal = BuySignals.check(df)
+#         sell_signal = SellSignals.check(df)
+
+#         if buy_signal:
+#             send_telegram(buy_signal)
+#             print(buy_signal)
+
+#         if sell_signal:
+#             send_telegram(sell_signal)
+#             print(sell_signal)
+
+#         # DELETE
+#         print(" ")
+#         print(" ")
+#         trend = EMA_TREND.check(df)
+#         print_zone_debug(df, trend)
+#         print(" ")
+#         print(" ")
+
+#     except Exception as e:
+#         print("Error:", e)
