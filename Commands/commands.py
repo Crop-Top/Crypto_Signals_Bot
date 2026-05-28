@@ -73,6 +73,8 @@ async def zone(update, context):
 
     current_zone = RSI_Trend_Continue_signal.current_zone
     previous_zone = RSI_Trend_Continue_signal.previous_zone
+    pending_signal = RSI_Trend_Continue_signal.pending_signal
+    pending_target_zone = RSI_Trend_Continue_signal.pending_target_zone
 
     rsi_value = df["close"].iloc[-1]  # we can improve later to real RSI value
 
@@ -83,6 +85,8 @@ Trend: {trend}
 
 Previous Zone: {previous_zone}
 Current Zone: {current_zone}
+Pending Signal: {pending_signal}
+Pending Target Zone: {pending_target_zone}
 
 Price: {rsi_value}
 """
