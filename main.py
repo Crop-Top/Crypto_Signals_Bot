@@ -6,7 +6,10 @@ from ta.trend import EMAIndicator
 from dotenv import load_dotenv
 import os
 from datetime import datetime
-from Indicator.EMA import EMA
+from Indicator.EMA_TREND import EMA_TREND
+from services.bybit_service import get_data
+from Signals.buy_signals import BuySignals
+from Signals.sell_signals import SellSignals
 from services.bybit_service import get_data
 
 load_dotenv()
@@ -42,7 +45,7 @@ def send_telegram(message):
 # =========================
 df = get_data()
 
-signal = EMA.check(df)
+signal = EMA_TREND.check(df)
 
 if signal:
     # send_telegram(signal)
@@ -79,11 +82,16 @@ while True:
 
         df = get_data()
 
-        signal = EMA.check(df)
+        buy_signal = BuySignals.check(df)
+        sell_signal = SellSignals.check(df)
 
-        # if signal:
-            # send_telegram(signal)
-            # print(signal)
+        if buy_signal:
+            send_telegram(buy_signal)
+            print(buy_signal)
+
+        if sell_signal:
+            send_telegram(sell_signal)
+        print(sell_signal)
 
     except Exception as e:
         print("Error:", e)

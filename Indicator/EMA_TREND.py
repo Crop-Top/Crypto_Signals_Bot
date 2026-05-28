@@ -2,7 +2,7 @@ from ta.trend import EMAIndicator
 from datetime import datetime
 
 # class for EMA indicator for strategy
-class EMA:
+class EMA_TREND:
 
     @classmethod
     def check(cls, df):
@@ -28,9 +28,9 @@ class EMA:
 
         price_closed = df["close"].iloc[-2]
 
-        print(f'9EMA Value: {current_ema9} {datetime.now().strftime("%H:%M:%S")}')
-        print(f'21EMA Value: {current_ema21} {datetime.now().strftime("%H:%M:%S")}')
-        print(f'50EMA Value: {current_ema50} {datetime.now().strftime("%H:%M:%S")}')
+        # print(f'9EMA Value: {current_ema9} {datetime.now().strftime("%H:%M:%S")}')
+        # print(f'21EMA Value: {current_ema21} {datetime.now().strftime("%H:%M:%S")}')
+        # print(f'50EMA Value: {current_ema50} {datetime.now().strftime("%H:%M:%S")}')
 
         # Market Direction
         if current_ema9 > current_ema21 and price_closed > current_ema50:
