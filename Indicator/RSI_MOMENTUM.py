@@ -65,6 +65,8 @@ class RSI_Trend_Continue_signal:
     @classmethod
     def check(cls, df, trend):
 
+        print("🔥 RSI ENGINE RUN - SOURCE: SIGNAL LOOP")
+
         # -------------------------
         # CALCULATE RSI
         # -------------------------
@@ -99,12 +101,10 @@ class RSI_Trend_Continue_signal:
         # 1. CONFIRM EXISTING PENDING SIGNALS FIRST
         # =====================================================
 
-        # -------------------------
-        # CONFIRM BUY SIGNAL
-        # -------------------------
+        # CONFIRM BUY
         if cls.pending_signal == "BUY_CONTINUATION":
 
-            if trend == "BULLISH" and new_zone == "HIGH":
+            if trend == "BULLISH" and cls.current_zone == "HIGH":
 
                 cls.pending_signal = None
                 cls.pending_target_zone = None
@@ -113,12 +113,11 @@ class RSI_Trend_Continue_signal:
 
                 return "BUY_CONTINUATION"
 
-        # -------------------------
-        # CONFIRM SELL SIGNAL
-        # -------------------------
+
+        # CONFIRM SELL
         if cls.pending_signal == "SELL_CONTINUATION":
 
-            if trend == "BEARISH" and new_zone == "LOW":
+            if trend == "BEARISH" and cls.current_zone == "LOW":
 
                 cls.pending_signal = None
                 cls.pending_target_zone = None

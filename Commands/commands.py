@@ -46,6 +46,8 @@ Price: ${price}
 
 async def zone(update, context):
 
+    print("🔥 RSI ENGINE RUN - SOURCE: ZONE COMMAND")
+
     df = get_data()
 
     # get current trend (optional but useful context)

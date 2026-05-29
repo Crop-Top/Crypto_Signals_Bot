@@ -39,7 +39,12 @@ def send_telegram(message):
         "text": message
     }
 
-    requests.post(url, data=payload)
+    response = requests.post(url, data=payload)
+
+    print("Telegram status:", response.status_code)
+    print("Telegram response:", response.text)
+
+    return response
 
 async def wait_for_next_5min():
     now = datetime.now()
@@ -76,13 +81,16 @@ async def signal_loop():
             buy_signal = BuySignals.check(df, trend, rsi_signal)
             sell_signal = SellSignals.check(df, trend, rsi_signal)
 
+            print("BUY SIGNAL:", buy_signal)
+            print("SELL SIGNAL:", sell_signal)
+
             if buy_signal:
-                send_telegram(buy_signal)
-                print(buy_signal)
+                response = send_telegram(buy_signal)
+                print("TELEGRAM RESPONSE:", response)
 
             if sell_signal:
-                send_telegram(sell_signal)
-                print(sell_signal)
+                response = send_telegram(sell_signal)
+                print("TELEGRAM RESPONSE:", response)
 
             print("Checked signals...")
 
