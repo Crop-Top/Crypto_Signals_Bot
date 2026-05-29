@@ -3,7 +3,9 @@ from ta.momentum import RSIIndicator
 
 class RSI_Trend_Continue_signal:
 
-    # persistent state (remembers last known RSI zone)
+    # -------------------------
+    # PERSISTENT STATE
+    # -------------------------
     current_zone = None
     previous_zone = None
 
@@ -26,7 +28,7 @@ class RSI_Trend_Continue_signal:
             return "MID"
 
     # -------------------------
-    # INITIAL STATE RECOVERY (COLD START FIX)
+    # INITIAL STATE RECOVERY
     # -------------------------
     @classmethod
     def initialize_zone(cls, df):
@@ -36,21 +38,25 @@ class RSI_Trend_Continue_signal:
             window=14
         ).rsi()
 
-        # scan backwards to find last meaningful zone
+        # scan backwards for last REAL zone
         for i in range(-2, -len(df), -1):
 
             rsi = df["rsi"].iloc[i]
             zone = cls.get_zone(rsi)
 
-            # ignore neutral zone
             if zone != "MID":
 
                 cls.current_zone = zone
+                cls.previous_zone = zone
+
                 print(f"[INIT] RSI starting zone: {zone}")
+
                 return zone
 
-        # fallback if everything is neutral
+        # fallback
         cls.current_zone = "MID"
+        cls.previous_zone = "MID"
+
         return "MID"
 
     # -------------------------
@@ -59,14 +65,17 @@ class RSI_Trend_Continue_signal:
     @classmethod
     def check(cls, df, trend):
 
+        # -------------------------
+        # CALCULATE RSI
+        # -------------------------
         df["rsi"] = RSIIndicator(
             close=df["close"],
             window=14
         ).rsi()
 
         rsi = df["rsi"].iloc[-2]
+
         new_zone = cls.get_zone(rsi)
-        old_zone = None
 
         # -------------------------
         # INIT IF FIRST RUN
@@ -74,27 +83,76 @@ class RSI_Trend_Continue_signal:
         if cls.current_zone is None:
             cls.initialize_zone(df)
             return None
-        
-        if cls.previous_zone is None:
-            cls.pending_zone = cls.current_zone
-
-        if new_zone != "MID":
-            old_zone = cls.current_zone
-
-            # update previous FIRST
-            cls.previous_zone = old_zone
-
-            # then update current
-            cls.current_zone = new_zone
-
-
 
         # -------------------------
-        # CONTINUATION SIGNALS
+        # DEBUG
         # -------------------------
+        print("------ RSI CHECK ------")
+        print(f"Trend: {trend}")
+        print(f"Previous Zone: {cls.previous_zone}")
+        print(f"Current Zone: {cls.current_zone}")
+        print(f"New Zone: {new_zone}")
+        print(f"Pending Signal: {cls.pending_signal}")
+        print("-----------------------")
+
+        # =====================================================
+        # 1. CONFIRM EXISTING PENDING SIGNALS FIRST
+        # =====================================================
 
         # -------------------------
-        # CREATE PENDING BUY SETUP
+        # CONFIRM BUY SIGNAL
+        # -------------------------
+        if cls.pending_signal == "BUY_CONTINUATION":
+
+            if trend == "BULLISH" and new_zone == "HIGH":
+
+                cls.pending_signal = None
+                cls.pending_target_zone = None
+
+                print("[CONFIRMED] BUY continuation")
+
+                return "BUY_CONTINUATION"
+
+        # -------------------------
+        # CONFIRM SELL SIGNAL
+        # -------------------------
+        if cls.pending_signal == "SELL_CONTINUATION":
+
+            if trend == "BEARISH" and new_zone == "LOW":
+
+                cls.pending_signal = None
+                cls.pending_target_zone = None
+
+                print("[CONFIRMED] SELL continuation")
+
+                return "SELL_CONTINUATION"
+
+        # =====================================================
+        # 2. IGNORE MID ZONES
+        # =====================================================
+
+        if new_zone == "MID":
+            return None
+
+        # =====================================================
+        # 3. IGNORE DUPLICATE ZONES
+        # =====================================================
+
+        if new_zone == cls.current_zone:
+            return None
+
+        # =====================================================
+        # 4. DETECT TRANSITIONS
+        # =====================================================
+
+        old_zone = cls.current_zone
+
+        # update state
+        cls.previous_zone = old_zone
+        cls.current_zone = new_zone
+
+        # -------------------------
+        # CREATE BUY SETUP
         # -------------------------
         if old_zone == "LOW" and new_zone == "HIGH":
 
@@ -104,7 +162,7 @@ class RSI_Trend_Continue_signal:
             print("[PENDING] BUY setup created")
 
         # -------------------------
-        # CREATE PENDING SELL SETUP
+        # CREATE SELL SETUP
         # -------------------------
         if old_zone == "HIGH" and new_zone == "LOW":
 
@@ -113,29 +171,7 @@ class RSI_Trend_Continue_signal:
 
             print("[PENDING] SELL setup created")
 
-        # -------------------------
-        # CONFIRM BUY SIGNAL
-        # -------------------------
-        if cls.pending_signal == "BUY_CONTINUATION":
-
-            if trend == "BULLISH" and cls.current_zone == "HIGH":
-
-                cls.pending_signal = None
-                cls.pending_target_zone = None
-
-                return "BUY_CONTINUATION"
-
-        # -------------------------
-        # CONFIRM SELL SIGNAL
-        # -------------------------
-        if cls.pending_signal == "SELL_CONTINUATION":
-
-            if trend == "BEARISH" and cls.current_zone == "LOW":
-
-                cls.pending_signal = None
-                cls.pending_target_zone = None
-
-                return "SELL_CONTINUATION"
+        return None
 
 
 class RSI_Reversal_Signal:

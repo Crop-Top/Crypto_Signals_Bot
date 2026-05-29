@@ -9,6 +9,7 @@ from Signals.sell_signals import SellSignals
 from telegram.ext import Application, CommandHandler
 import asyncio
 from Commands.commands import trend, zone, print_zone_debug
+from Indicator.RSI_MOMENTUM import RSI_Trend_Continue_signal, RSI_Reversal_Signal
 
 load_dotenv()
 # =========================
@@ -68,8 +69,12 @@ async def signal_loop():
 
             print_zone_debug(df, trend)
 
-            buy_signal = BuySignals.check(df)
-            sell_signal = SellSignals.check(df)
+            # RUN RSI ENGINE ONCE
+            rsi_signal = RSI_Trend_Continue_signal.check(df, trend)
+
+            # pass result into signal handlers
+            buy_signal = BuySignals.check(df, trend, rsi_signal)
+            sell_signal = SellSignals.check(df, trend, rsi_signal)
 
             if buy_signal:
                 send_telegram(buy_signal)
@@ -93,8 +98,6 @@ send_telegram("✅ EMA Signal Bot Online")
 
 async def main():
 
-    print("Bot started...")
-
     # start telegram bot
     await app.initialize()
     await app.start()
@@ -110,7 +113,12 @@ async def main():
         await asyncio.sleep(3600)
 
 
-asyncio.run(main())
+try:
+    asyncio.run(main())
+
+except KeyboardInterrupt:
+    print("\nBot stopped manually.")
+    send_telegram("Bot stopped manually")
 
 # while True:
 

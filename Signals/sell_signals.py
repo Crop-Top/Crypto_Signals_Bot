@@ -6,17 +6,7 @@ from services.bybit_service import get_data
 class SellSignals:
 
     @classmethod
-    def check(cls, df):
-
-        # -------------------------
-        # GET TREND
-        # -------------------------
-        trend = EMA_TREND.check(df)
-
-        # -------------------------
-        # GET RSI SIGNAL
-        # -------------------------
-        rsi_signal = RSI_Trend_Continue_signal.check(df, trend)
+    def check(cls, df, trend, rsi_signal):
 
         # -------------------------
         # SELL CONDITIONS ONLY
