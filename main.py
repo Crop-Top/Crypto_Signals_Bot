@@ -45,12 +45,12 @@ async def wait_for_next_5min():
     now = datetime.now()
 
     # seconds passed in current 5m block
-    # seconds_passed = (now.minute % 5) * 60 + now.second
-    seconds_passed = (now.minute % 1) * 60 + now.second
+    seconds_passed = (now.minute % 5) * 60 + now.second
+    #seconds_passed = (now.minute % 1) * 60 + now.second
 
     # seconds until next 5m candle
-    #sleep_time = 300 - seconds_passed
-    sleep_time = 60 - seconds_passed
+    sleep_time = 300 - seconds_passed
+    #sleep_time = 60 - seconds_passed
 
     print(f"Waiting {sleep_time:.0f}s until next 5m candle...")
 

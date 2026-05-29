@@ -11,12 +11,15 @@ class RSI_Trend_Continue_signal:
 
     pending_signal = None
     pending_target_zone = None
+    old_zone = None
 
     # -------------------------
     # ZONE CLASSIFICATION
     # -------------------------
     @classmethod
     def get_zone(cls, rsi):
+
+        print(rsi)
 
         if rsi <= 45:
             return "LOW"
@@ -124,18 +127,27 @@ class RSI_Trend_Continue_signal:
         # 3. IGNORE DUPLICATE ZONES
         # =====================================================
 
-        if new_zone == cls.current_zone:
-            return None
+        # if new_zone == cls.current_zone:
+        #     return None
 
         # =====================================================
         # 4. DETECT TRANSITIONS
         # =====================================================
 
+        print(f"this is current zone: {cls.current_zone}")
+
         old_zone = cls.current_zone
 
+        print(f"this is the new old zone after old_zone = cls.current_zone: {old_zone}")
+        print(f"this is prev zone: {cls.previous_zone}")
         # update state
         cls.previous_zone = old_zone
+
+        print(f"This is new prev zone after cls.previous_zone = old_zone: {cls.previous_zone}")
+        print(f"this is current zone: {cls.current_zone}")
         cls.current_zone = new_zone
+
+        print(f"This is new current zone after cls.current_zone = new_zone: {cls.current_zone}")
 
         # -------------------------
         # CREATE BUY SETUP
