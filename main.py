@@ -3,13 +3,13 @@ from dotenv import load_dotenv
 import os
 from datetime import datetime
 from Indicator.EMA_TREND import EMA_TREND
+from Indicator.RSI_MOMENTUM import RSI_Trend_Continue_signal
 from services.bybit_service import get_data
 from Signals.buy_signals import BuySignals
 from Signals.sell_signals import SellSignals
 from telegram.ext import Application, CommandHandler
 import asyncio
 from Commands.commands import trend, zone, print_zone_debug
-from Indicator.RSI_MOMENTUM import RSI_Trend_Continue_signal, RSI_Reversal_Signal
 
 load_dotenv()
 # =========================
@@ -39,12 +39,7 @@ def send_telegram(message):
         "text": message
     }
 
-    response = requests.post(url, data=payload)
-
-    print("Telegram status:", response.status_code)
-    print("Telegram response:", response.text)
-
-    return response
+    requests.post(url, data=payload)
 
 async def wait_for_next_5min():
     now = datetime.now()
@@ -72,25 +67,20 @@ async def signal_loop():
 
             trend = EMA_TREND.check(df)
 
-            print_zone_debug(df, trend)
+            print_zone_debug()
 
-            # RUN RSI ENGINE ONCE
             rsi_signal = RSI_Trend_Continue_signal.check(df, trend)
 
-            # pass result into signal handlers
             buy_signal = BuySignals.check(df, trend, rsi_signal)
             sell_signal = SellSignals.check(df, trend, rsi_signal)
 
-            print("BUY SIGNAL:", buy_signal)
-            print("SELL SIGNAL:", sell_signal)
-
             if buy_signal:
-                response = send_telegram(buy_signal)
-                print("TELEGRAM RESPONSE:", response)
+                send_telegram(buy_signal)
+                print(buy_signal)
 
             if sell_signal:
-                response = send_telegram(sell_signal)
-                print("TELEGRAM RESPONSE:", response)
+                send_telegram(sell_signal)
+                print(sell_signal)
 
             print("Checked signals...")
 
@@ -127,36 +117,3 @@ try:
 except KeyboardInterrupt:
     print("\nBot stopped manually.")
     send_telegram("Bot stopped manually")
-
-# while True:
-
-#     wait_for_next_5min()
-
-#     current_time = datetime.now().strftime("%H:%M:%S")
-#     print(f"\nChecking signals at {current_time}")
-
-#     try:
-
-#         df = get_data()
-
-#         buy_signal = BuySignals.check(df)
-#         sell_signal = SellSignals.check(df)
-
-#         if buy_signal:
-#             send_telegram(buy_signal)
-#             print(buy_signal)
-
-#         if sell_signal:
-#             send_telegram(sell_signal)
-#             print(sell_signal)
-
-#         # DELETE
-#         print(" ")
-#         print(" ")
-#         trend = EMA_TREND.check(df)
-#         print_zone_debug(df, trend)
-#         print(" ")
-#         print(" ")
-
-#     except Exception as e:
-#         print("Error:", e)

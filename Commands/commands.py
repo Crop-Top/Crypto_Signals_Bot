@@ -80,10 +80,8 @@ Price: {rsi_value}
 
 
 # DELETE
-def print_zone_debug(df, trend):
+def print_zone_debug():
     from Indicator.RSI_MOMENTUM import RSI_Trend_Continue_signal
-
-    RSI_Trend_Continue_signal.check(df, trend)
 
     print("━━━━━━━━━━━━━━━━━━━━")
     print("📊 ZONE DEBUG")
@@ -92,14 +90,3 @@ def print_zone_debug(df, trend):
     print(f"Pending Signal:{RSI_Trend_Continue_signal.pending_signal}")
     print(f"Pending Target:{RSI_Trend_Continue_signal.pending_target_zone}")
     print("━━━━━━━━━━━━━━━━━━━━")
-
-# =========================
-# MAIN
-# =========================
-# app = Application.builder().token(os.getenv("BOT_TOKEN")).build()
-
-# bind commands
-# app.add_handler(CommandHandler("trend", trend))
-# app.add_handler(CommandHandler("zone", zone))
-
-# app.run_polling()
