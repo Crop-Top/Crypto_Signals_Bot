@@ -65,8 +65,6 @@ class RSI_Trend_Continue_signal:
     @classmethod
     def check(cls, df, trend):
 
-        print("🔥 RSI ENGINE RUN - SOURCE: SIGNAL LOOP")
-
         # -------------------------
         # CALCULATE RSI
         # -------------------------
@@ -85,17 +83,6 @@ class RSI_Trend_Continue_signal:
         if cls.current_zone is None:
             cls.initialize_zone(df)
             return None
-
-        # -------------------------
-        # DEBUG
-        # -------------------------
-        print("------ RSI CHECK ------")
-        print(f"Trend: {trend}")
-        print(f"Previous Zone: {cls.previous_zone}")
-        print(f"Current Zone: {cls.current_zone}")
-        print(f"New Zone: {new_zone}")
-        print(f"Pending Signal: {cls.pending_signal}")
-        print("-----------------------")
 
         # =====================================================
         # 1. CONFIRM EXISTING PENDING SIGNALS FIRST

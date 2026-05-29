@@ -46,8 +46,6 @@ Price: ${price}
 
 async def zone(update, context):
 
-    print("🔥 RSI ENGINE RUN - SOURCE: ZONE COMMAND")
-
     df = get_data()
 
     # get current trend (optional but useful context)
@@ -79,7 +77,6 @@ Price: {rsi_value}
     await update.message.reply_text(message)
 
 
-# DELETE
 def print_zone_debug():
     from Indicator.RSI_MOMENTUM import RSI_Trend_Continue_signal
 
@@ -89,4 +86,4 @@ def print_zone_debug():
     print(f"Current Zone:  {RSI_Trend_Continue_signal.current_zone}")
     print(f"Pending Signal:{RSI_Trend_Continue_signal.pending_signal}")
     print(f"Pending Target:{RSI_Trend_Continue_signal.pending_target_zone}")
-    print("━━━━━━━━━━━━━━━━━━━━")
+    print("━━━━━━━━━━━━━━━━━━━━\n\n")
