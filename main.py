@@ -10,6 +10,7 @@ from Signals.sell_signals import SellSignals
 from telegram.ext import Application, CommandHandler
 import asyncio
 from Commands.commands import trend, zone, print_zone_debug, stopbot
+from Tracker.trade_tracker import TradeTracker
 
 load_dotenv()
 # =========================
@@ -68,20 +69,57 @@ async def signal_loop():
 
             df = get_data()
 
+            current_price = df["close"].iloc[-1]
+
+            TradeTracker.update_trade(current_price)
+
             trend = EMA_TREND.check(df)
 
             rsi_signal = RSI_Trend_Continue_signal.check(df, trend)
 
             print_zone_debug(df)
+            TradeTracker.print_trade()
 
             buy_signal = BuySignals.check(df, trend, rsi_signal)
             sell_signal = SellSignals.check(df, trend, rsi_signal)
 
             if buy_signal:
+
+                current_price = df["close"].iloc[-1]
+
+                # close existing trade first (OPTION A RULE)
+                if TradeTracker.active_trade is not None:
+                    TradeTracker.close_trade(current_price)
+
+                # open new trade
+                TradeTracker.open_trade(
+                    signal="BUY_CONTINUATION",
+                    entry_price=current_price,
+                    trend=trend,
+                    rsi=RSI_Trend_Continue_signal.current_rsi if hasattr(RSI_Trend_Continue_signal, "current_rsi") else None,
+                    zone_transition="LOW->HIGH"
+                )
+
                 send_telegram(buy_signal)
                 print(buy_signal)
 
             if sell_signal:
+
+                current_price = df["close"].iloc[-1]
+
+                # close existing trade first
+                if TradeTracker.active_trade is not None:
+                    TradeTracker.close_trade(current_price)
+
+                # open new trade
+                TradeTracker.open_trade(
+                    signal="SELL_CONTINUATION",
+                    entry_price=current_price,
+                    trend=trend,
+                    rsi=RSI_Trend_Continue_signal.current_rsi if hasattr(RSI_Trend_Continue_signal, "current_rsi") else None,
+                    zone_transition="HIGH->LOW"
+                )
+
                 send_telegram(sell_signal)
                 print(sell_signal)
 

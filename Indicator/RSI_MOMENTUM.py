@@ -72,8 +72,11 @@ class RSI_Trend_Continue_signal:
             window=14
         ).rsi()
 
+
         rsi = df["rsi"].iloc[-2]
 
+        cls.current_rsi = rsi
+        
         new_zone = cls.get_zone(rsi)
 
         # -------------------------
