@@ -9,7 +9,7 @@ from Signals.buy_signals import BuySignals
 from Signals.sell_signals import SellSignals
 from telegram.ext import Application, CommandHandler
 import asyncio
-from Commands.commands import trend, zone, print_zone_debug
+from Commands.commands import trend, zone, print_zone_debug, stopbot
 
 load_dotenv()
 # =========================
@@ -20,6 +20,7 @@ app = Application.builder().token(os.getenv("BOT_TOKEN")).build()
 # bind commands
 app.add_handler(CommandHandler("trend", trend))
 app.add_handler(CommandHandler("zone", zone))
+app.add_handler(CommandHandler("stopbot", stopbot))
 
 # =========================
 # TELEGRAM SETTINGS
@@ -45,12 +46,12 @@ async def wait_for_next_5min():
     now = datetime.now()
 
     # seconds passed in current 5m block
-    seconds_passed = (now.minute % 5) * 60 + now.second
-    #seconds_passed = (now.minute % 1) * 60 + now.second
+    #seconds_passed = (now.minute % 5) * 60 + now.second
+    seconds_passed = (now.minute % 1) * 60 + now.second
 
     # seconds until next 5m candle
-    sleep_time = 300 - seconds_passed
-    #sleep_time = 60 - seconds_passed
+    #sleep_time = 300 - seconds_passed
+    sleep_time = 60 - seconds_passed
 
     print(f"Waiting {sleep_time:.0f}s until next 5m candle...")
 
@@ -71,7 +72,7 @@ async def signal_loop():
 
             rsi_signal = RSI_Trend_Continue_signal.check(df, trend)
 
-            print_zone_debug()
+            print_zone_debug(df)
 
             buy_signal = BuySignals.check(df, trend, rsi_signal)
             sell_signal = SellSignals.check(df, trend, rsi_signal)

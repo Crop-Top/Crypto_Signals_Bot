@@ -59,7 +59,7 @@ async def zone(update, context):
     pending_signal = RSI_Trend_Continue_signal.pending_signal
     pending_target_zone = RSI_Trend_Continue_signal.pending_target_zone
 
-    rsi_value = df["close"].iloc[-1]  # we can improve later to real RSI value
+    price = df["close"].iloc[-1]  # we can improve later to real RSI value
 
     message = f"""
 📊 RSI ZONE DEBUG
@@ -71,19 +71,30 @@ Current Zone: {current_zone}
 Pending Signal: {pending_signal}
 Pending Target Zone: {pending_target_zone}
 
-Price: {rsi_value}
+Price: ${price}
 """
 
     await update.message.reply_text(message)
 
+async def stopbot(update, context):
 
-def print_zone_debug():
+    await update.message.reply_text(
+        "🛑 Stopping signal bot..."
+    )
+
+    os._exit(0)    
+
+
+def print_zone_debug(df):
     from Indicator.RSI_MOMENTUM import RSI_Trend_Continue_signal
-
+    price = df["close"].iloc[-1]
+    trend = EMA_TREND.check(df)
     print("━━━━━━━━━━━━━━━━━━━━")
+    print(f"Trend: {trend}")
     print("📊 ZONE DEBUG")
     print(f"Previous Zone: {RSI_Trend_Continue_signal.previous_zone}")
     print(f"Current Zone:  {RSI_Trend_Continue_signal.current_zone}")
     print(f"Pending Signal:{RSI_Trend_Continue_signal.pending_signal}")
     print(f"Pending Target:{RSI_Trend_Continue_signal.pending_target_zone}")
+    print(f"Price: ${price}")
     print("━━━━━━━━━━━━━━━━━━━━\n\n")
