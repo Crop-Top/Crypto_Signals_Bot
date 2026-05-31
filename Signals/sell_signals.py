@@ -23,8 +23,8 @@ class SellSignals:
         # SELL CONDITIONS ONLY
         # -------------------------
 
-        if rsi_signal == "SELL_CONTINUATION" and trend == "BEARISH" and zone == "LOW":
-            
+        if rsi_signal == "SELL_CONTINUATION" and trend == "BEARISH":
+
             return f"""
 🔻 SELL CONTINUATION SIGNAL
 

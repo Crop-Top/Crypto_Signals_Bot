@@ -10,7 +10,7 @@ def get_data():
     response = session.get_kline(
         category="linear",
         symbol="BTCUSDT",
-        interval="1",
+        interval="5",
         limit=1000
     )
 

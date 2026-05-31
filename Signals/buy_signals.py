@@ -24,7 +24,7 @@ class BuySignals:
         # BUY CONDITIONS ONLY
         # -------------------------
 
-        if rsi_signal == "BUY_CONTINUATION" and trend == "BULLISH" and zone == "HIGH":
+        if rsi_signal == "BUY_CONTINUATION" and trend == "BULLISH":
             return f"""
 🚀 BUY CONTINUATION SIGNAL
 

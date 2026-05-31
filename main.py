@@ -11,6 +11,7 @@ from telegram.ext import Application, CommandHandler
 import asyncio
 from Commands.commands import trend, zone, print_zone_debug, stopbot
 from Tracker.trade_tracker import TradeTracker
+from Tracker.trade_logger import TradeLogger
 
 load_dotenv()
 # =========================
@@ -47,12 +48,12 @@ async def wait_for_next_5min():
     now = datetime.now()
 
     # seconds passed in current 5m block
-    #seconds_passed = (now.minute % 5) * 60 + now.second
-    seconds_passed = (now.minute % 1) * 60 + now.second
+    seconds_passed = (now.minute % 5) * 60 + now.second
+    #seconds_passed = (now.minute % 1) * 60 + now.second
 
     # seconds until next 5m candle
-    #sleep_time = 300 - seconds_passed
-    sleep_time = 60 - seconds_passed
+    sleep_time = 300 - seconds_passed
+    #sleep_time = 60 - seconds_passed
 
     print(f"Waiting {sleep_time:.0f}s until next 5m candle...")
 
@@ -68,26 +69,32 @@ async def signal_loop():
         try:
 
             df = get_data()
-
             current_price = df["close"].iloc[-1]
 
-            TradeTracker.update_trade(current_price)
-
             trend = EMA_TREND.check(df)
-
             rsi_signal = RSI_Trend_Continue_signal.check(df, trend)
 
             print_zone_debug(df)
-            TradeTracker.print_trade()
 
+            # =========================
+            # 1. UPDATE EXISTING TRADE
+            # =========================
+            if TradeTracker.active_trade is not None:
+                TradeTracker.update_trade(current_price)
+
+            # =========================
+            # 2. CHECK SIGNALS
+            # =========================
             buy_signal = BuySignals.check(df, trend, rsi_signal)
             sell_signal = SellSignals.check(df, trend, rsi_signal)
 
+            # =========================
+            # 3. EXECUTION LOGIC
+            # =========================
+
             if buy_signal:
 
-                current_price = df["close"].iloc[-1]
-
-                # close existing trade first (OPTION A RULE)
+                # close existing trade (OPTION A)
                 if TradeTracker.active_trade is not None:
                     TradeTracker.close_trade(current_price)
 
@@ -96,32 +103,33 @@ async def signal_loop():
                     signal="BUY_CONTINUATION",
                     entry_price=current_price,
                     trend=trend,
-                    rsi=RSI_Trend_Continue_signal.current_rsi if hasattr(RSI_Trend_Continue_signal, "current_rsi") else None,
+                    rsi=getattr(RSI_Trend_Continue_signal, "current_rsi", None),
                     zone_transition="LOW->HIGH"
                 )
 
                 send_telegram(buy_signal)
                 print(buy_signal)
 
-            if sell_signal:
+            elif sell_signal:
 
-                current_price = df["close"].iloc[-1]
-
-                # close existing trade first
                 if TradeTracker.active_trade is not None:
                     TradeTracker.close_trade(current_price)
 
-                # open new trade
                 TradeTracker.open_trade(
                     signal="SELL_CONTINUATION",
                     entry_price=current_price,
                     trend=trend,
-                    rsi=RSI_Trend_Continue_signal.current_rsi if hasattr(RSI_Trend_Continue_signal, "current_rsi") else None,
+                    rsi=getattr(RSI_Trend_Continue_signal, "current_rsi", None),
                     zone_transition="HIGH->LOW"
                 )
 
                 send_telegram(sell_signal)
                 print(sell_signal)
+
+            # =========================
+            # DEBUG OUTPUT
+            # =========================
+            TradeTracker.print_trade()
 
             print("Checked signals...")
 
@@ -136,7 +144,7 @@ print(f'Bot started... {datetime.now().strftime("%H:%M:%S")}')
 send_telegram("✅ EMA Signal Bot Online")
 
 async def main():
-
+    TradeLogger.init_file()
     # start telegram bot
     await app.initialize()
     await app.start()
