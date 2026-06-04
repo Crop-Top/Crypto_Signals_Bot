@@ -12,6 +12,8 @@ import asyncio
 from Commands.commands import trend, zone, print_zone_debug, stopbot
 from Tracker.trade_tracker import TradeTracker
 from Tracker.trade_logger import TradeLogger
+from services.webhook_service import send_signal
+from Utils.telegram_formatter import format_signal
 
 load_dotenv()
 # =========================
@@ -101,13 +103,22 @@ async def signal_loop():
                 # open new trade
                 TradeTracker.open_trade(
                     signal="BUY_CONTINUATION",
-                    entry_price=current_price,
+                    entry_price=buy_signal["price"],
                     trend=trend,
                     rsi=getattr(RSI_Trend_Continue_signal, "current_rsi", None),
                     zone_transition="LOW->HIGH"
                 )
 
-                send_telegram(buy_signal)
+                success = send_signal(buy_signal)
+
+                if success:
+                    print("[WEBHOOK] Signal delivered")
+                else:
+                    print("[WEBHOOK] Signal delivery failed")
+
+                telegram_message = format_signal(buy_signal)
+
+                send_telegram(telegram_message)
                 print(buy_signal)
 
             elif sell_signal:
@@ -117,13 +128,22 @@ async def signal_loop():
 
                 TradeTracker.open_trade(
                     signal="SELL_CONTINUATION",
-                    entry_price=current_price,
+                    entry_price=sell_signal["price"],
                     trend=trend,
                     rsi=getattr(RSI_Trend_Continue_signal, "current_rsi", None),
                     zone_transition="HIGH->LOW"
                 )
 
-                send_telegram(sell_signal)
+                success = send_signal(sell_signal)
+
+                if success:
+                    print("[WEBHOOK] Signal delivered")
+                else:
+                    print("[WEBHOOK] Signal delivery failed")
+
+                telegram_message = format_signal(sell_signal)
+
+                send_telegram(telegram_message)
                 print(sell_signal)
 
             # =========================

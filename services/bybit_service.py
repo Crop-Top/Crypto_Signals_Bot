@@ -39,3 +39,15 @@ def get_data():
     df = df[::-1]
 
     return df
+
+def calculate_tp_sl(price, side):
+    if side == "BUY":
+        tp = price * 1.005
+        sl = price * 0.997
+    elif side == "SELL":
+        tp = price * 0.995
+        sl = price * 1.003
+    else:
+        raise ValueError("Invalid side")
+
+    return float(tp), float(sl)

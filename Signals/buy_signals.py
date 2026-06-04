@@ -3,6 +3,7 @@ from Indicator.RSI_MOMENTUM import RSI_Trend_Continue_signal, RSI_Reversal_Signa
 from services.bybit_service import get_data
 from ta.momentum import RSIIndicator
 from datetime import datetime
+from services.bybit_service import calculate_tp_sl
 
 
 class BuySignals:
@@ -25,20 +26,20 @@ class BuySignals:
         # -------------------------
 
         if rsi_signal == "BUY_CONTINUATION" and trend == "BULLISH":
-            return f"""
-🚀 BUY CONTINUATION SIGNAL
+            tp, sl = calculate_tp_sl(price, "BUY")
 
-📈 Trend: Bullish
-💰 Symbol: BTCUSDT
-💵 Price: ${price:,.2f}
-
-📊 Indicator: RSI Momentum
-🔄 Setup: LOW → HIGH Zone
-📈 RSI: {rsi:.2f}
-
-⏰ Timeframe: 5m
-🕒 Time: {datetime.now().strftime("%H:%M:%S")}
-"""
+            return {
+                "signal": "BUY_CONTINUATION",
+                "side": "BUY",
+                "symbol": "BTCUSDT",
+                "price": float(price),
+                "tp": tp,
+                "sl": sl,
+                "rsi": float(rsi),
+                "trend": trend,
+                "timeframe": "5m",
+                "zone_transition": "LOW->HIGH"
+            }
 
  
         return None
